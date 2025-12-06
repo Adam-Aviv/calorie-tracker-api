@@ -165,6 +165,7 @@ router.post(
         userId: req.user?.id,
         foodId: food._id,
         date: new Date(date),
+        mealType: mealType,
         servings: servingsNum,
         calories: food.calories * servingsNum,
         protein: food.protein * servingsNum,

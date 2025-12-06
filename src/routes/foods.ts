@@ -2,7 +2,7 @@ import express, { Response } from "express";
 import { body, validationResult } from "express-validator";
 import Food from "../models/Food";
 import { protect } from "../moddleware/auth";
-import { IAuthRequest, IFoodInput, IfoodQuery } from "../types";
+import { IAuthRequest, IfoodQuery } from "../types";
 
 const router = express.Router();
 
@@ -24,6 +24,10 @@ router.get(
       const query: any = { userId: req.user?.id };
 
       if (search) {
+        query.$text = { $search: search };
+      }
+
+      if (category) {
         query.category = category;
       }
 
