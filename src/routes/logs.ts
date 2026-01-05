@@ -2,7 +2,7 @@ import express, { Response } from "express";
 import { body, validationResult } from "express-validator";
 import FoodLog from "../models/FoodLog";
 import Food from "../models/Food";
-import { protect } from "../moddleware/auth";
+import { protect } from "../middleware/auth";
 import { IAuthRequest, IFoodLogInput, ILogQuery } from "../types";
 
 const router = express.Router();
@@ -34,7 +34,7 @@ router.get(
         .sort({ date: -1, createdAt: -1 });
 
       res.json({
-        sucess: true,
+        success: true,
         data: logs,
       });
     } catch (error) {
@@ -165,7 +165,7 @@ router.post(
         userId: req.user?.id,
         foodId: food._id,
         date: new Date(date),
-        mealType: mealType,
+        mealType,
         servings: servingsNum,
         calories: food.calories * servingsNum,
         protein: food.protein * servingsNum,
@@ -196,12 +196,12 @@ router.post(
 // @desc    Update food log entry
 // @access  Private
 router.put(
-  ":/",
+  "/:id",
   protect,
   async (req: IAuthRequest, res: Response): Promise<void> => {
     try {
-      let log = await FoodLog.findOne({
-        _id: req.params.od,
+      const log = await FoodLog.findOne({
+        _id: req.params.id,
         userId: req.user?.id,
       });
 
@@ -224,14 +224,18 @@ router.put(
         }
       }
 
-      log = await FoodLog.findByIdAndUpdate(req.params.id, req.body, {
-        new: true,
-        runValidators: true,
-      }).populate("foodId");
+      const updatedLog = await FoodLog.findByIdAndUpdate(
+        req.params.id,
+        req.body,
+        {
+          new: true,
+          runValidators: true,
+        }
+      ).populate("foodId");
 
       res.json({
         success: true,
-        data: log,
+        data: updatedLog,
       });
     } catch (error) {
       const err = error as Error;

@@ -29,14 +29,14 @@ export const protect = async (
       return;
     }
 
+    // Verify token
     try {
-      // Verify token
       const decoded = jwt.verify(
         token,
         process.env.JWT_SECRET as string
       ) as IJWTPayload;
 
-      // get user from token
+      // Get user from token
       const user = await User.findById(decoded.id);
 
       if (!user) {
@@ -51,7 +51,7 @@ export const protect = async (
       next();
     } catch (err) {
       res.status(401).json({
-        succes: false,
+        success: false,
         message: "Not authorized, token failed",
       });
       return;
@@ -65,6 +65,7 @@ export const protect = async (
   }
 };
 
+// Generate JWT token
 export const generateToken = (id: string): string => {
   return jwt.sign({ id }, process.env.JWT_SECRET as string, {
     expiresIn: "30d",

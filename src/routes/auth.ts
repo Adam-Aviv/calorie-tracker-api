@@ -1,7 +1,7 @@
 import express, { Request, Response } from "express";
 import { body, validationResult } from "express-validator";
 import User from "../models/User";
-import { generateToken, protect } from "../moddleware/auth";
+import { generateToken, protect } from "../middleware/auth";
 import { IAuthRequest, IRegisterInput, ILoginInput } from "../types";
 
 const router = express.Router();
@@ -31,6 +31,7 @@ router.post(
         });
         return;
       }
+
       const { email, password, name } = req.body;
 
       const userExists = await User.findOne({ email });
@@ -39,6 +40,7 @@ router.post(
           success: false,
           message: "User already exists with this email",
         });
+        return;
       }
 
       const user = await User.create({
@@ -62,7 +64,7 @@ router.post(
       const err = error as Error;
       res.status(500).json({
         success: false,
-        message: "Server error during registartion",
+        message: "Server error during registration",
         error: err.message,
       });
     }
@@ -73,7 +75,7 @@ router.post(
 // @desc    Login user
 // @access  Public
 router.post(
-  "login",
+  "/login",
   [
     body("email").isEmail().withMessage("Please provide a valid email"),
     body("password").notEmpty().withMessage("Password is required"),
@@ -91,7 +93,7 @@ router.post(
 
       const { email, password } = req.body;
 
-      const user = await User.findOne({ email }).select("password");
+      const user = await User.findOne({ email }).select("+password");
 
       if (!user) {
         res.status(401).json({
@@ -114,14 +116,12 @@ router.post(
       const token = generateToken(user._id);
 
       res.json({
-        succes: true,
+        success: true,
         data: {
-          id: {
-            id: user._id,
-            name: user.name,
-            email: user.email,
-            token,
-          },
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          token,
         },
       });
     } catch (error) {
@@ -137,7 +137,7 @@ router.post(
 
 // @route   GET /api/auth/me
 // @desc    Get current user
-// @access Private
+// @access  Private
 router.get(
   "/me",
   protect,

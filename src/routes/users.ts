@@ -1,6 +1,6 @@
 import express, { Response } from "express";
 import User from "../models/User";
-import { protect } from "../moddleware/auth";
+import { protect } from "../middleware/auth";
 import { IAuthRequest, IUserInput, ITDEEResult } from "../types";
 
 const router = express.Router();
@@ -59,7 +59,7 @@ router.put(
         }
       });
 
-      const user = User.findByIdAndUpdate(req.user?.id, updates, {
+      const user = await User.findByIdAndUpdate(req.user?.id, updates, {
         new: true,
         runValidators: true,
       });
@@ -83,7 +83,7 @@ router.put(
 // @desc    Calculate TDEE for user
 // @access  Private
 router.get(
-  "calculate-tdee",
+  "/calculate-tdee",
   protect,
   async (req: IAuthRequest, res: Response): Promise<void> => {
     try {

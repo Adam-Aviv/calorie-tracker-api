@@ -14,8 +14,10 @@ dotenv.config();
 // Initialize express app
 const app = express();
 
-// Connect to MongoDB
-connectDB();
+// Connect to MongoDB only if not in test mode (tests use in-memory DB)
+if (process.env.NODE_ENV !== "test") {
+  connectDB();
+}
 
 // Middleware
 app.use(
@@ -35,19 +37,19 @@ app.use("/api/logs", logRoutes);
 app.use("/api/weight", weightRoutes);
 
 // Health check route
-app.get("/health", (req: Request, res: Response) => {
+app.get("/health", (_req: Request, res: Response) => {
   res.json({
     status: "OK",
-    message: "API is up and running",
+    message: "Calorie Calculator API is running",
     timestamp: new Date().toISOString(),
   });
 });
 
 // 404 handler
-app.use((req: Request, res: Response) => {
+app.use((_req: Request, res: Response) => {
   res.status(404).json({
     success: false,
-    message: "route not found",
+    message: "Route not found",
   });
 });
 
@@ -57,7 +59,7 @@ interface ErrorWithStatus extends Error {
 }
 
 app.use(
-  (err: ErrorWithStatus, req: Request, res: Response, next: NextFunction) => {
+  (err: ErrorWithStatus, _req: Request, res: Response, _next: NextFunction) => {
     console.error(err.stack);
     res.status(err.status || 500).json({
       success: false,
@@ -67,11 +69,13 @@ app.use(
   }
 );
 
-// Staart server
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`server running on port ${PORT}`);
-  console.log(`Environment: ${process.env.NODE_ENV}`);
-});
+// Start server only if not in test mode
+if (process.env.NODE_ENV !== "test") {
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`📍 Environment: ${process.env.NODE_ENV || "development"}`);
+  });
+}
 
 export default app;

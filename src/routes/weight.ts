@@ -1,7 +1,7 @@
 import express, { Response } from "express";
 import { body, validationResult } from "express-validator";
 import WeightHistory from "../models/WeightHistory";
-import { protect } from "../moddleware/auth";
+import { protect } from "../middleware/auth";
 import {
   IAuthRequest,
   IWeightInput,

@@ -1,7 +1,7 @@
 import express, { Response } from "express";
 import { body, validationResult } from "express-validator";
 import Food from "../models/Food";
-import { protect } from "../moddleware/auth";
+import { protect } from "../middleware/auth";
 import { IAuthRequest, IfoodQuery } from "../types";
 
 const router = express.Router();

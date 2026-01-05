@@ -47,6 +47,7 @@ const userSchema = new Schema<IUser>(
     activityLevel: {
       type: String,
       enum: ["sedentary", "light", "moderate", "active", "very_active"],
+      default: "moderate",
     },
     dailyCalorieGoal: {
       type: Number,
@@ -62,7 +63,7 @@ const userSchema = new Schema<IUser>(
     },
     fatsGoal: {
       type: Number,
-      defaule: 65,
+      default: 65,
     },
   },
   {
@@ -82,27 +83,31 @@ userSchema.pre("save", async function (next) {
 });
 
 // Method to compare passwords
-userSchema.methods.compparePassword = async function (
+userSchema.methods.comparePassword = async function (
   candidatePassword: string
 ): Promise<boolean> {
+  // Make sure password exists
+  if (!this.password) {
+    return false;
+  }
   return await bcrypt.compare(candidatePassword, this.password);
 };
 
-//Calculate TDEE based on user data
+// Calculate TDEE based on user data
 userSchema.methods.calculateTDEE = function (): number | null {
-  if (!this.currentWeight || !this.height || this.age) {
+  if (!this.currentWeight || !this.height || !this.age) {
     return null;
   }
 
-  // Miffin-St Jeor Equation
+  // Mifflin-St Jeor Equation
   let bmr: number;
   if (this.gender === "male") {
     bmr = 10 * this.currentWeight + 6.25 * this.height - 5 * this.age + 5;
   } else {
-    bmr = 10 * this.currentWeight + 6.25 + this.height - 5 * this.age - 161;
+    bmr = 10 * this.currentWeight + 6.25 * this.height - 5 * this.age - 161;
   }
 
-  //Activity
+  // Activity multipliers
   const activityMultipliers: Record<string, number> = {
     sedentary: 1.2,
     light: 1.375,
