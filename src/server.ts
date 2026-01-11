@@ -21,27 +21,33 @@ if (process.env.NODE_ENV !== "test") {
 
 // Middleware
 const allowedOrigins = [
-  "http://localhost:8100", // Ionic serve
-  "http://localhost", // Capacitor iOS/Android
-  "capacitor://localhost", // Capacitor iOS
+  "http://localhost:8100",
+  "http://localhost:8100/", // Added slash just in case
+  "http://localhost:8200",
+  "capacitor://localhost",
+  "http://localhost",
+  "https://api-calorie-tracker.adam-aviv.com",
 ];
 
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      console.log("Incoming Request from Origin:", origin); // <--- ADD THIS
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.indexOf(origin) === -1) {
-        console.error("CORS Blocked for:", origin); // <--- ADD THIS
-        return callback(new Error("CORS policy violation"), false);
-      }
+const corsOptions: cors.CorsOptions = {
+  origin: (origin, callback) => {
+    // 1. Allow requests with no origin (like mobile apps, curl, or Postman)
+    if (!origin) return callback(null, true);
+
+    // 2. Check if the origin is in our list
+    if (allowedOrigins.includes(origin)) {
       return callback(null, true);
-    },
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
+    } else {
+      console.error(`❌ CORS blocked this origin: ${origin}`);
+      return callback(new Error("CORS policy violation"), false);
+    }
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
