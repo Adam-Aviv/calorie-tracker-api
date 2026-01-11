@@ -1,6 +1,5 @@
 import { Request } from "express";
 import { Document } from "mongoose";
-import { NumberLiteralType } from "typescript";
 
 // User Types
 export interface IUser extends Document {
